@@ -1,5 +1,7 @@
 {
     init: function(elevators, floors) {
+        var doorDelay = 1000, idleDelay = 5000;
+        var idleFloor = -1;
         var fbot = floors[0].floorNum(), ftop = floors[floors.length-1].floorNum();
         var fhalf = floors[Math.floor(floors.length/2)].floorNum();
         var uppers = [], downers = [];
@@ -12,7 +14,7 @@
               console.log("move elevator " + ei + " " + d + " from " + c + " to " + n);
               elev.goingDownIndicator(!up);
               elev.goingUpIndicator(up);
-              elev.goToFloor(n);
+              setTimeout(elev.goToFloor(n), doorDelay);
         }
         
         var carString = function(ei) {
@@ -43,24 +45,25 @@
         _.each(elevators, function(elev) {
             var ei = elevators.indexOf(elev), goingup = true, callup = true, callfn = -1;
             elev.on("idle", function() {
-                setTimeout(5000);
                 console.log(carString(ei) + " idle");
-                var n = -1;
-                if (uppers.length !== 0) {
-                    n = uppers.shift();
-                    callfn = n;
-                    callup = true;
-                } else if (downers.length !== 0) {
-                    n = downers.shift();
-                    callfn = n;
-                    callup = false;
-                }
-                
-                if (n > -1) {
-                    move(ei, n);
-                } else {
-                    move(ei, 0);
-                }
+                setTimeout(function() {
+                  var n = -1;
+                  if (uppers.length !== 0) {
+                      n = uppers.shift();
+                      callfn = n;
+                      callup = true;
+                  } else if (downers.length !== 0) {
+                      n = downers.shift();
+                      callfn = n;
+                      callup = false;
+                  }
+                  
+                  if (n > -1) {
+                      move(ei, n);
+                  } else if (idleFloor > -1) {
+                      move(ei, idleFloor);
+                  }
+                },idleDelay);
             });
             elev.on("floor_button_pressed", function(n) {
                 move(ei, n);
@@ -96,12 +99,19 @@
                     elev.goingDownIndicator(true);
                 } else if (floors[n].buttonStates.up !== "") {
                     elev.goingUpIndicator(true);
-                };
+                }
+                var i = uppers.indexOf(n), j = downers.indexOf(n);
+                if (goingup && i > -1) {
+                    uppers.splice(i,1);
+                } else if (j > -1) {
+                    downers.splice(j,1);
+                }
             });
         });
     },
     update: function(dt, elevators, floors) {
         _.each(floors, function(floor) {
+            var n = floor.floorNum();
             if (floor.buttonStates.down !== "") { floor.pressDownButton(); }
             if (floor.buttonStates.up !== "") { floor.pressUpButton(); }
         });
