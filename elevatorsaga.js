@@ -1,7 +1,12 @@
 {
     init: function(elevators, floors) {
         var doorDelay = 100, idleDelay = 100;
-        var idleFloor = Math.floor(floors.length/2)-1;
+        // if idleFloor is set to -1 it won't move.
+        var idleFloor = -2;//Math.floor(floors.length/2-1);
+        // if idleFloor is set to -2 it will use the following random floor
+        var randomFloor = function() {
+            return Math.floor(Math.random()*floors.length);
+        }
         var fbot = floors[0].floorNum(), ftop = floors[floors.length-1].floorNum();
         var fhalf = floors[Math.floor(floors.length/2)].floorNum();
         var uppers = [], downers = [];
@@ -60,6 +65,8 @@
                   
                   if (n > -1) {
                       move(ei, n);
+                  } else if (idleFloor === -2) {
+                      move(ei, randomFloor());
                   } else if (idleFloor > -1) {
                       move(ei, idleFloor);
                   }
