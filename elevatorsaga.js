@@ -1,7 +1,7 @@
 {
     init: function(elevators, floors) {
-        var doorDelay = 1000, idleDelay = 5000;
-        var idleFloor = -1;
+        var doorDelay = 100, idleDelay = 100;
+        var idleFloor = Math.floor(floors.length/2)-1;
         var fbot = floors[0].floorNum(), ftop = floors[floors.length-1].floorNum();
         var fhalf = floors[Math.floor(floors.length/2)].floorNum();
         var uppers = [], downers = [];
