@@ -1,6 +1,7 @@
 {
     init: function(elevators, floors) {
         var doorDelay = 100, idleDelay = 100;
+        var carsDedicatedService = 0;
         // if idleFloor is set to -1 it won't move.
         var idleFloor = -2;//Math.floor(floors.length/2-1);
         // if idleFloor is set to -2 it will use the following random floor
@@ -52,23 +53,28 @@
             elev.on("idle", function() {
                 console.log(carString(ei) + " idle");
                 setTimeout(function() {
-                  var n = -1;
-                  if (uppers.length !== 0) {
-                      n = uppers.shift();
-                      callfn = n;
-                      callup = true;
-                  } else if (downers.length !== 0) {
-                      n = downers.shift();
-                      callfn = n;
-                      callup = false;
-                  }
-                  
-                  if (n > -1) {
-                      move(ei, n);
-                  } else if (idleFloor === -2) {
-                      move(ei, randomFloor());
-                  } else if (idleFloor > -1) {
-                      move(ei, idleFloor);
+                  if (ei < carsDedicatedService) {
+                    if (elev.currentFloor() === fbot) { move(ei, ftop); }
+                    else { move(ei, fbot); }
+                  } else {
+                    var n = -1;
+                    if (uppers.length !== 0) {
+                        n = uppers.shift();
+                        callfn = n;
+                        callup = true;
+                    } else if (downers.length !== 0) {
+                        n = downers.shift();
+                        callfn = n;
+                        callup = false;
+                    }
+                    
+                    if (n > -1) {
+                        move(ei, n);
+                    } else if (idleFloor === -2) {
+                        move(ei, randomFloor());
+                    } else if (idleFloor > -1) {
+                        move(ei, idleFloor);
+                    }
                   }
                 },idleDelay);
             });
